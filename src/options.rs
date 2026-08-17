@@ -13,7 +13,7 @@ pub(crate) struct Options {
 
 impl Options {
     pub fn from_claps(matches: &clap::ArgMatches) -> Options {
-        let options = Options {
+        Options {
             verbose: *matches.get_one("verbose").unwrap_or(&false),
             prepend_sudo: *matches.get_one("prepend_sudo").unwrap_or(&false),
             separate_allowed_ips: *matches.get_one("separate_allowed_ips").unwrap_or(&false),
@@ -29,8 +29,6 @@ impl Options {
             export_latest_handshake_delay: *matches
                 .get_one("export_latest_handshake_delay")
                 .unwrap_or(&false),
-        };
-
-        options
+        }
     }
 }

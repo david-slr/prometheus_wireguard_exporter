@@ -24,7 +24,7 @@ impl<'a> TryFrom<(&'a str, &'a str)> for FriendlyDescription<'a> {
                 return Err(FriendlyDescritionParseError::UnsupportedHeader(format!(
                     "{} is not a supported tag",
                     other
-                )))
+                )));
             }
         })
     }

@@ -1,8 +1,6 @@
 use anyhow::Context;
-use clap::{crate_authors, crate_name, crate_version, value_parser, Arg};
-use hyper::{Body, Request};
+use clap::{Arg, crate_authors, crate_name, crate_version, value_parser};
 use log::{debug, info, trace};
-use prometheus_exporter_base::prelude::{Authorization, ServerOptions};
 use std::env;
 mod options;
 use options::Options;
@@ -13,16 +11,15 @@ mod friendly_description;
 pub use friendly_description::*;
 use wireguard::WireGuard;
 mod exporter_error;
+mod prometheus;
+mod server;
 mod wireguard_config;
-use prometheus_exporter_base::render_prometheus;
+use server::{Authorization, BoxError, ServerOptions, run_server};
 use std::net::IpAddr;
 use std::sync::Arc;
 use wireguard_config::peer_entry_hashmap_try_from;
 
-async fn perform_request(
-    _req: Request<Body>,
-    options: Arc<Options>,
-) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+async fn perform_request(options: Arc<Options>) -> Result<String, BoxError> {
     let interfaces_to_handle = match &options.interfaces {
         Some(interfaces_str) => interfaces_str.clone(),
         None => vec!["all".to_owned()],
@@ -70,14 +67,12 @@ async fn perform_request(
         let output_stdout_str = String::from_utf8(output.stdout)?;
         trace!(
             "wg show {} dump stdout == {}",
-            interface_to_handle,
-            output_stdout_str
+            interface_to_handle, output_stdout_str
         );
         let output_stderr_str = String::from_utf8(output.stderr)?;
         trace!(
             "wg show {} dump stderr == {}",
-            interface_to_handle,
-            output_stderr_str
+            interface_to_handle, output_stderr_str
         );
 
         // the output of wg show is different if we use all or we specify an interface.
@@ -200,15 +195,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let options = Options::from_claps(&matches);
 
     if options.verbose {
-        env::set_var(
-            "RUST_LOG",
-            format!("{}=trace,prometheus_exporter_base=trace", crate_name!()),
-        );
+        // No other threads have been started before configuring the logger.
+        unsafe { env::set_var("RUST_LOG", format!("{}=trace", crate_name!())) };
     } else {
-        env::set_var(
-            "RUST_LOG",
-            format!("{}=info,prometheus_exporter_base=info", crate_name!()),
-        );
+        // No other threads have been started before configuring the logger.
+        unsafe { env::set_var("RUST_LOG", format!("{}=info", crate_name!())) };
     }
     env_logger::init();
 
@@ -230,10 +221,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         authorization: Authorization::None,
     };
 
-    render_prometheus(server_options, options, |request, options| {
-        Box::pin(perform_request(request, options))
-    })
-    .await;
+    run_server(server_options, options, perform_request).await?;
 
     Ok(())
 }

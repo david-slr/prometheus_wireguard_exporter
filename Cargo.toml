@@ -1,36 +1,37 @@
 [package]
-name                     = "prometheus_wireguard_exporter"
-version                  = "3.6.6"
-authors                  = ["Francesco Cogno <francesco.cogno@outlook.com>"]
-description              = "Prometheus WireGuard Exporter"
-edition                  = "2018"
+name = "prometheus_wireguard_exporter"
+version = "3.6.6"
+authors = ["Francesco Cogno <francesco.cogno@outlook.com>"]
+description = "Prometheus WireGuard Exporter"
+edition = "2024"
 
-readme                   = "README.md"
-license                  = "MIT"
-repository               = "https://github.com/MindFlavor/prometheus_wireguard_exporter"
-documentation            = "https://github.com/MindFlavor/prometheus_wireguard_exporter"
-homepage                 = "https://github.com/MindFlavor/prometheus_wireguard_exporter"
+documentation = "https://github.com/MindFlavor/prometheus_wireguard_exporter"
+readme = "README.md"
+homepage = "https://github.com/MindFlavor/prometheus_wireguard_exporter"
+repository = "https://github.com/MindFlavor/prometheus_wireguard_exporter"
+license = "MIT"
 
-keywords                 = ["prometheus", "exporter", "wireguard"]
-categories               = ["database"]
-
-[features]
-default 		 = []
-leaky_log     		 = []
+keywords = ["exporter", "prometheus", "wireguard"]
+categories = ["database"]
 
 [dependencies]
-log                      = "0.4.33"
-env_logger               = "0.11.11"
-clap                     = { version = "4.6.6", features = ["cargo", "env"] }
-serde_json               = "1.0.151"
-serde                    = "1.0.229"
-thiserror		 = "2.0.20"
-anyhow			 = "1.0.104"
-hyper                    = { version = "0.14.32", features = ["stream"] }
-http                     = "0.2.12"
-tokio                    = { version = "1.53.1", features = ["macros", "rt"] }
-prometheus_exporter_base = { version = "1.4.0", features = ["hyper_server"] }
-regex                    = "1.13.1"
+anyhow = "1.0.104"
+base64 = "0.23.1"
+bytes = "1.12.1"
+clap = { version = "4.6.6", features = ["cargo", "env"] }
+env_logger = "0.11.11"
+http = "1.5.0"
+http-body-util = "0.1.5"
+hyper = { version = "1.11.0", features = ["http1", "server"] }
+hyper-util = { version = "0.1.20", features = ["http1", "server", "tokio"] }
+log = "0.4.33"
+num = "0.4.3"
+regex = "1.13.1"
+serde = "1.0.229"
+serde_json = "1.0.151"
+thiserror = "2.0.20"
+tokio = { version = "1.53.1", features = ["io-util", "macros", "net", "rt", "sync"] }
 
-[dev-dependencies]
-clippy = "0.0.302"
+[features]
+default = []
+leaky_log = []

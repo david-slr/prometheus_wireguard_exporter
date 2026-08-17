@@ -1,5 +1,5 @@
-use crate::exporter_error::PeerEntryParseError;
 use crate::FriendlyDescription;
+use crate::exporter_error::PeerEntryParseError;
 use log::debug;
 use std::collections::HashMap;
 use std::convert::TryFrom;
@@ -69,16 +69,16 @@ impl<'a> TryFrom<&[&'a str]> for PeerEntry<'a> {
             } else if line_lowercase.starts_with("allowedips") {
                 allowed_ips = after_char_strip_comment(line, '=').trim();
                 debug!("allowed_ips == {}", allowed_ips);
-            } else if line.trim().starts_with('#') {
-                if let Some((key, value)) = from_pound_line_to_key_value(line) {
-                    // if it's a supported key, let' map it.
-                    // we support one key now but this way
-                    // we can support more in the future
-                    match key {
-                        "friendly_name" => friendly_description = Some((key, value).try_into()?),
-                        "friendly_json" => friendly_description = Some((key, value).try_into()?),
-                        _ => {}
-                    }
+            } else if line.trim().starts_with('#')
+                && let Some((key, value)) = from_pound_line_to_key_value(line)
+            {
+                // if it's a supported key, let' map it.
+                // we support one key now but this way
+                // we can support more in the future
+                match key {
+                    "friendly_name" => friendly_description = Some((key, value).try_into()?),
+                    "friendly_json" => friendly_description = Some((key, value).try_into()?),
+                    _ => {}
                 }
             }
         }
@@ -110,7 +110,7 @@ pub(crate) type PeerEntryHashMap<'a> = HashMap<&'a str, PeerEntry<'a>>;
 
 pub(crate) fn peer_entry_hashmap_try_from(
     txt: &str,
-) -> Result<PeerEntryHashMap, PeerEntryParseError> {
+) -> Result<PeerEntryHashMap<'_>, PeerEntryParseError> {
     debug!("txt == {}", txt);
     let mut hm = HashMap::new();
 
@@ -131,10 +131,10 @@ pub(crate) fn peer_entry_hashmap_try_from(
             }
         } else {
             // push the line if we are in a block (only if not empty)
-            if let Some(inner_cur_block) = &mut cur_block {
-                if !line.is_empty() {
-                    inner_cur_block.push(line);
-                }
+            if let Some(inner_cur_block) = &mut cur_block
+                && !line.is_empty()
+            {
+                inner_cur_block.push(line);
             }
         }
     }
